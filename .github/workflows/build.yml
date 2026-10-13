@@ -1,0 +1,54 @@
+
+name: Build ERPNext India
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Frappe Docker
+        uses: actions/checkout@v4
+        with:
+          repository: frappe/frappe_docker
+          path: frappe_docker
+
+      - name: Create apps.json
+        working-directory: frappe_docker
+        run: |
+          cat > apps.json <<'EOF'
+          [
+            {
+              "url": "https://github.com/frappe/erpnext",
+              "branch": "version-16"
+            },
+            {
+              "url": "https://github.com/resilient-tech/india-compliance",
+              "branch": "version-16"
+            }
+          ]
+          EOF
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish image
+        working-directory: frappe_docker
+        run: |
+          docker buildx build \
+            --build-arg=FRAPPE_PATH=https://github.com/frappe/frappe \
+            --build-arg=FRAPPE_BRANCH=version-16 \
+            --secret=id=apps_json,src=apps.json \
+            --tag=ghcr.io/YOUR_GITHUB_USERNAME/erpnext-india:v16 \
+            --push \
+            --file=images/layered/Containerfile .
