@@ -49,6 +49,6 @@ jobs:
             --build-arg=FRAPPE_PATH=https://github.com/frappe/frappe \
             --build-arg=FRAPPE_BRANCH=version-16 \
             --secret=id=apps_json,src=apps.json \
-            --tag=ghcr.io/anandb9706-boop/erpnext-india:v16 \
+            --tag=ghcr.io/anandb9706/erpnext-india:v16 \
             --push \
             --file=images/layered/Containerfile .
